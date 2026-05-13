@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Internet Speed Simulator</title>
+<style>
+ body { font-family: Arial; background:#eef3f9; text-align:center; }
+ .box { background:white; padding:20px; border-radius:10px; width:80%; margin:20px auto; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
+ input, select { padding:8px; margin:5px; }
+ button { padding:10px; background:#0078d4; color:white; border:none; border-radius:6px; }
+ table { width:100%; margin-top:15px; border-collapse:collapse; }
+ td, th { padding:8px; border-bottom:1px solid #ddd; }
+ .bar { height:10px; background:#0078d4; }
+</style>
+</head>
+<body>
+
+<h1>Internet Speed Simulator</h1>
+<p>See how long files take to download on different connection types</p>
+
+<div class="box">
+<h3>Choose File Size</h3>
+<input type="number" id="size" value="100">
+<select id="unit">
+<option value="KB">KB</option>
+<option value="MB" selected>MB</option>
+<option value="GB">GB</option>
+</select>
+<button onclick="calculate()">Calculate</button>
+
+<h4>Quick Examples</h4>
+<button onclick="preset(5,'MB')">Song (5MB)</button>
+<button onclick="preset(100,'MB')">Video (100MB)</button>
+<button onclick="preset(1000,'MB')">Movie (1GB)</button>
+<button onclick="preset(50,'GB')">Game (50GB)</button>
+<button onclick="preset(2,'MB')">Image (2MB)</button>
+</div>
+
+<div class="box">
+<h3>Results</h3>
+<table>
+<tr><th>Technology</th><th>Speed</th><th>Time</th><th></th></tr>
+<tbody id="results"></tbody>
+</table>
+</div>
+
+<script>
+const speeds = {
+ "Dial-up": 56_000,
+ "ISDN": 128_000,
+ "ADSL": 8_000_000,
+ "Broadband": 50_000_000,
+ "FTTC": 76_000_000,
+ "FTTP": 300_000_000
+};
+
+function convertToBits(size, unit){
+ if(unit==='KB') return size*8*1000;
+ if(unit==='MB') return size*8*1000*1000;
+ if(unit==='GB') return size*8*1000*1000*1000;
+}
+
+function formatTime(seconds){
+ if(seconds < 60) return seconds.toFixed(1) + " seconds";
+ 
+ let minutes = seconds / 60;
+ if(minutes < 60) return minutes.toFixed(1) + " minutes";
+ 
+ let hours = minutes / 60;
+ if(hours < 24) return hours.toFixed(1) + " hours";
+ 
+ let days = hours / 24;
+ if(days < 7) return days.toFixed(1) + " days";
+ 
+ let weeks = days / 7;
+ if(weeks < 52) return weeks.toFixed(1) + " weeks";
+ 
+ let years = weeks / 52;
+ return years.toFixed(2) + " years 😱";
+}
+
+function calculate(){
+ let size=document.getElementById('size').value;
+ let unit=document.getElementById('unit').value;
+ let bits=convertToBits(size,unit);
+ let tbody=document.getElementById('results');
+ tbody.innerHTML="";
+
+ Object.entries(speeds).forEach(([name,speed])=>{
+  let time=bits/speed;
+  let row=document.createElement('tr');
+
+  let barWidth = Math.min(200,(time/60)*2);
+
+  row.innerHTML = `
+    <td>${name}</td>
+    <td>${(speed/1_000_000).toFixed(1)} Mbps</td>
+    <td>${formatTime(time)}</td>
+    <td><div class="bar" style="width:${barWidth}px"></div></td>
+  `;
+
+  tbody.appendChild(row);
+ });
+}
+
+function preset(size,unit){
+ document.getElementById('size').value=size;
+ document.getElementById('unit').value=unit;
+ calculate();
+}
+</script>
+
+</body>
+</html>

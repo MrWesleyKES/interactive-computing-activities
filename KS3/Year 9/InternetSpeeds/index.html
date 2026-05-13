@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -55,6 +56,13 @@ const speeds = {
  "FTTP": 300_000_000
 };
 
+function formatSpeed(speed){
+  if(speed < 1_000_000){
+    return (speed/1000).toFixed(0) + " Kbps"; // clearer for slow tech
+  }
+  return (speed/1_000_000).toFixed(1) + " Mbps";
+}
+
 function convertToBits(size, unit){
  if(unit==='KB') return size*8*1000;
  if(unit==='MB') return size*8*1000*1000;
@@ -95,7 +103,7 @@ function calculate(){
 
   row.innerHTML = `
     <td>${name}</td>
-    <td>${(speed/1_000_000).toFixed(1)} Mbps</td>
+    <td>${formatSpeed(speed)}</td>
     <td>${formatTime(time)}</td>
     <td><div class="bar" style="width:${barWidth}px"></div></td>
   `;

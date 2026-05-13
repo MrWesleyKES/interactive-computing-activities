@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Network Builder + Quiz</title>
+<style>
+ body { font-family: Arial; background:#eef3f9; text-align:center; }
+ svg { background:white; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+ .node { cursor:grab; }
+ .dropzone rect { stroke:#bbb; stroke-dasharray:5; fill:none; }
+ .correct rect { stroke:green; }
+ .wrong rect { stroke:red; }
+ .label { font-size:11px; text-anchor:middle; }
+ button { margin-top:10px; padding:10px; width:240px; border:none; border-radius:8px; background:#0078d4; color:white; }
+ .packet { fill:#ff5722; }
+ .quiz { margin-top:25px; background:white; padding:20px; border-radius:10px; width:80%; margin-left:auto; margin-right:auto; box-shadow:0 2px 6px rgba(0,0,0,0.2); text-align:left; }
+ .question { margin-bottom:15px; }
+ .feedback { font-weight:bold; }
+</style>
+</head>
+<body>
+
+<h1>Fix the Network & Test Your Knowledge</h1>
+<p>Build the network then complete the quiz</p>
+
+<svg id="canvas" width="950" height="350"></svg>
+
+<button onclick="checkAnswers()">Check & Send Data</button>
+<p id="feedback"></p>
+
+<div class="quiz">
+<h3>Retrieval Quiz</h3>
+
+<div class="question">
+<p>1. What is a search engine?</p>
+<label><input type="radio" name="q1" value="a"> A program that sends emails</label><br>
+<label><input type="radio" name="q1" value="b"> A tool that searches the internet for information</label><br>
+<label><input type="radio" name="q1" value="c"> A type of website builder</label>
+</div>
+
+<div class="question">
+<p>2. What does a web crawler do?</p>
+<label><input type="radio" name="q2" value="a"> Deletes websites</label><br>
+<label><input type="radio" name="q2" value="b"> Browses and indexes web pages</label><br>
+<label><input type="radio" name="q2" value="c"> Sends data packets</label>
+</div>
+
+<div class="question">
+<p>3. Which are the three processes of a search engine?</p>
+<label><input type="radio" name="q3" value="a"> Save, load, print</label><br>
+<label><input type="radio" name="q3" value="b"> Crawl, Index, Rank</label><br>
+<label><input type="radio" name="q3" value="c"> Upload, download, stream</label>
+</div>
+
+<div class="question">
+<p>4. What are keywords?</p>
+<label><input type="radio" name="q4" value="a"> Important search words</label><br>
+<label><input type="radio" name="q4" value="b"> Passwords</label><br>
+<label><input type="radio" name="q4" value="c"> Website names</label>
+</div>
+
+<div class="question">
+<p>5. What does AND do in a search?</p>
+<label><input type="radio" name="q5" value="a"> Excludes results</label><br>
+<label><input type="radio" name="q5" value="b"> Narrows results by including both terms</label><br>
+<label><input type="radio" name="q5" value="c"> Makes results random</label>
+</div>
+
+<button onclick="checkQuiz()">Submit Quiz</button>
+<p id="quizFeedback" class="feedback"></p>
+</div>
+
+<script>
+const svg = document.getElementById('canvas');
+const zonesData = [
+ {id:'computer', x:50},
+ {id:'router', x:230},
+ {id:'modem', x:410},
+ {id:'socket', x:590},
+ {id:'isp', x:770}
+];
+const zones=[];
+zonesData.forEach(z=>{
+ const g=document.createElementNS("http://www.w3.org/2000/svg","g");
+ g.setAttribute('class','dropzone'); g.dataset.x=z.x; g.dataset.y=200;
+ g.setAttribute('transform',`translate(${z.x},200)`);
+ const r=document.createElementNS("http://www.w3.org/2000/svg","rect");
+ r.setAttribute('width',110); r.setAttribute('height',80);
+ g.appendChild(r); svg.appendChild(g); zones.push(g);
+});
+
+// packet
+const packet=document.createElementNS("http://www.w3.org/2000/svg","circle");
+packet.setAttribute('r',6); packet.setAttribute('cy',240); packet.setAttribute('cx',150);
+packet.setAttribute('class','packet'); packet.style.display='none'; svg.appendChild(packet);
+
+function createDevice(id,x,y){
+ const g=document.createElementNS("http://www.w3.org/2000/svg","g");
+ g.setAttribute('class','node'); g.id=id;
+ g.setAttribute('transform',`translate(${x},${y})`);
+ g.innerHTML='<rect width="80" height="40" fill="#90caf9"/><text x="40" y="60" class="label">'+id+'</text>';
+ svg.appendChild(g); return g;
+}
+
+const xs=[50,200,350,500,650].sort(()=>Math.random()-0.5);
+const nodes=['computer','router','modem','socket','isp'].map((id,i)=>createDevice(id,xs[i],50+Math.random()*50));
+
+let dragItem=null, offsetX=0, offsetY=0;
+nodes.forEach(n=>{
+ n.addEventListener('mousedown',e=>{
+  dragItem=n; svg.appendChild(n);
+  let pt=svg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY;
+  let c=pt.matrixTransform(svg.getScreenCTM().inverse());
+  let m=n.transform.baseVal.getItem(0).matrix;
+  offsetX=c.x-m.e; offsetY=c.y-m.f;
+ });
+});
+
+addEventListener('mousemove',e=>{
+ if(!dragItem) return;
+ let pt=svg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY;
+ let c=pt.matrixTransform(svg.getScreenCTM().inverse());
+ dragItem.setAttribute('transform',`translate(${c.x-offsetX},${c.y-offsetY})`);
+});
+
+addEventListener('mouseup',()=>{ dragItem=null; });
+
+function checkAnswers(){
+ document.getElementById('feedback').innerText='Now try the quiz below!';
+}
+
+function checkQuiz(){
+ const answers={q1:'b',q2:'b',q3:'b',q4:'a',q5:'b'};
+ let score=0;
+ Object.keys(answers).forEach(q=>{
+  let selected=document.querySelector(`input[name="${q}"]:checked`);
+  if(selected && selected.value===answers[q]) score++;
+ });
+ document.getElementById('quizFeedback').innerText = `You scored ${score}/5`;
+}
+</script>
+
+</body>
+</html>

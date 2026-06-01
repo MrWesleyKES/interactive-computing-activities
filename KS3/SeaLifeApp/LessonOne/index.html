@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sea Life Centre – Do Now</title>
+<style>
+body { font-family: Arial; background:#e6f7ff; text-align:center; margin:0; }
+header { background:#0099cc; color:white; padding:15px; }
+.container { padding:20px; }
+.card { background:white; padding:20px; margin:15px auto; width:80%; border-radius:10px; }
+
+.drag { padding:10px; margin:10px; background:#cceeff; cursor:grab; border-radius:5px; }
+.drop { padding:20px; margin:10px; border:2px dashed #0099cc; border-radius:10px; min-height:50px; }
+
+.correct { background:#b3ffcc; }
+.wrong { background:#ffcccc; }
+</style>
+</head>
+<body>
+
+<header>
+<h1>Sea Life Centre – Do Now</h1>
+<p>Drag and drop activities!</p>
+</header>
+
+<div class="container">
+
+<!-- MATCHING ACTIVITY -->
+<div class="card">
+<h2>1. Match the fact to the animal</h2>
+
+<div id="facts">
+<div class="drag" draggable="true" ondragstart="drag(event)" id="fact1">Glow in the dark</div>
+<div class="drag" draggable="true" ondragstart="drag(event)" id="fact2">Older than dinosaurs</div>
+<div class="drag" draggable="true" ondragstart="drag(event)" id="fact3">Lives in sea anemones</div>
+<div class="drag" draggable="true" ondragstart="drag(event)" id="fact4">Can live 100+ years</div>
+</div>
+
+<div class="drop" ondrop="drop(event,'jellyfish')" ondragover="allowDrop(event)">Jellyfish</div>
+<div class="drop" ondrop="drop(event,'shark')" ondragover="allowDrop(event)">Shark</div>
+<div class="drop" ondrop="drop(event,'clownfish')" ondragover="allowDrop(event)">Clownfish</div>
+<div class="drop" ondrop="drop(event,'turtle')" ondragover="allowDrop(event)">Turtle</div>
+
+</div>
+
+<!-- SIZE SORT -->
+<div class="card">
+<h2>2. Order from smallest → biggest</h2>
+<p>Drag into order (top = smallest)</p>
+
+<div id="sizes">
+<div class="drag" draggable="true" ondragstart="drag(event)" id="turtle">Turtle</div>
+<div class="drag" draggable="true" ondragstart="drag(event)" id="shark">Shark</div>
+<div class="drag" draggable="true" ondragstart="drag(event)" id="jellyfish">Jellyfish</div>
+<div class="drag" draggable="true" ondragstart="drag(event)" id="clownfish">Clownfish</div>
+</div>
+
+<div class="drop" ondrop="dropOrder(event,0)" ondragover="allowDrop(event)"></div>
+<div class="drop" ondrop="dropOrder(event,1)" ondragover="allowDrop(event)"></div>
+<div class="drop" ondrop="dropOrder(event,2)" ondragover="allowDrop(event)"></div>
+<div class="drop" ondrop="dropOrder(event,3)" ondragover="allowDrop(event)"></div>
+
+<button onclick="checkOrder()">Check Order</button>
+<div id="orderResult"></div>
+
+</div>
+
+</div>
+
+<script>
+let order = ["", "", "", ""];
+
+function allowDrop(ev) { ev.preventDefault(); }
+
+function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+
+function drop(ev, animal) {
+  ev.preventDefault();
+  let data = ev.dataTransfer.getData("text");
+  ev.target.appendChild(document.getElementById(data));
+
+  const answers = {
+    fact1: "jellyfish",
+    fact2: "shark",
+    fact3: "clownfish",
+    fact4: "turtle"
+  };
+
+  if (answers[data] === animal) {
+    ev.target.classList.add("correct");
+  } else {
+    ev.target.classList.add("wrong");
+  }
+}
+
+function dropOrder(ev, position) {
+  ev.preventDefault();
+  let data = ev.dataTransfer.getData("text");
+  ev.target.innerHTML = document.getElementById(data).innerText;
+  order[position] = data;
+}
+
+function checkOrder() {
+  const correct = ["clownfish","jellyfish","turtle","shark"];
+  let result = document.getElementById("orderResult");
+
+  if (JSON.stringify(order) === JSON.stringify(correct)) {
+    result.innerHTML = "✅ Correct order!";
+  } else {
+    result.innerHTML = "❌ Try again!";
+  }
+}
+</script>
+
+</body>
+</html>

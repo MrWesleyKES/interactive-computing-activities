@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Match the Tool - Starter</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #0b132b;
+    color: white;
+    text-align: center;
+    margin: 0;
+}
+h1 {
+    background-color: #1c2541;
+    padding: 15px;
+    margin: 0;
+}
+.container {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+}
+.column {
+    width: 45%;
+}
+.item, .dropzone {
+    padding: 10px;
+    margin: 10px;
+    border-radius: 8px;
+}
+.item {
+    background-color: #3a506b;
+    cursor: grab;
+}
+.dropzone {
+    background-color: #5bc0be;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.correct {
+    background-color: #4caf50 !important;
+}
+button {
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 16px;
+}
+.success {
+    font-weight: bold;
+    margin-top: 15px;
+    font-size: 18px;
+    color: #4caf50;
+}
+</style>
+</head>
+<body>
+
+<h1>Match the Affinity Tools</h1>
+<p>Drag each tool to the correct description</p>
+
+<div class="container">
+
+<div class="column" id="tools"></div>
+
+<div class="column" id="descriptions"></div>
+
+</div>
+
+<button onclick="checkAnswers()">Check Answers</button>
+<button onclick="resetGame()">Reset</button>
+
+<p id="result"></p>
+<p id="success" class="success"></p>
+
+<script>
+const toolsData = [
+    { id: "move", name: "Move Tool" },
+    { id: "node", name: "Node Tool" },
+    { id: "shape", name: "Shape Tool" },
+    { id: "fill", name: "Fill Tool" },
+    { id: "add", name: "Add Tool" }
+];
+
+const descriptionsData = [
+    { match: "move", text: "Moves objects around the canvas" },
+    { match: "node", text: "Changes outline/points of a shape" },
+    { match: "shape", text: "Creates shapes like circles and rectangles" },
+    { match: "fill", text: "Changes colour of an object" },
+    { match: "add", text: "Combines two shapes into one" }
+];
+
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function loadGame() {
+    const toolsContainer = document.getElementById("tools");
+    const descContainer = document.getElementById("descriptions");
+
+    toolsContainer.innerHTML = "";
+    descContainer.innerHTML = "";
+
+    shuffle(toolsData);
+    shuffle(descriptionsData);
+
+    toolsData.forEach(tool => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.draggable = true;
+        div.id = tool.id;
+        div.innerHTML = `<strong>${tool.name}</strong>`;
+
+        div.addEventListener('dragstart', () => {
+            dragged = div;
+        });
+
+        toolsContainer.appendChild(div);
+    });
+
+    descriptionsData.forEach(desc => {
+        const div = document.createElement("div");
+        div.className = "dropzone";
+        div.dataset.match = desc.match;
+        div.textContent = desc.text;
+
+        div.addEventListener('dragover', e => e.preventDefault());
+        div.addEventListener('drop', e => {
+            e.preventDefault();
+            div.innerHTML = "";
+            div.appendChild(dragged);
+        });
+
+        descContainer.appendChild(div);
+    });
+}
+
+let dragged;
+
+function checkAnswers() {
+    let correct = 0;
+    document.querySelectorAll('.dropzone').forEach(zone => {
+        if (zone.firstChild && zone.firstChild.id === zone.dataset.match) {
+            zone.classList.add('correct');
+            correct++;
+        }
+    });
+
+    document.getElementById('result').innerText =
+        "You got " + correct + " out of 5 correct";
+
+    if (correct === 5) {
+        document.getElementById('success').innerText =
+            "✅ Collect your mascot from the front and continue creating it in Affinity.";
+    } else {
+        document.getElementById('success').innerText =
+            "❌ Not quite - click reset and try again.";
+    }
+}
+
+function resetGame() {
+    document.getElementById('result').innerText = "";
+    document.getElementById('success').innerText = "";
+    loadGame();
+}
+
+// Initial load
+loadGame();
+</script>
+
+</body>
+</html>
